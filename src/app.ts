@@ -1,6 +1,5 @@
 import { WebSocketServer } from 'ws'
-
-const PORT = 8080
+import { PORT } from '@/config'
 
 const wss = new WebSocketServer({ port: PORT })
 
