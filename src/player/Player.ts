@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid'
+import { WebSocket } from 'ws'
 
 class Player {
     public readonly id: string

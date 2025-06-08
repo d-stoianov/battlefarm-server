@@ -1,20 +1,18 @@
-const messageTypes = [
-    'session_create',
-    'session_created',
-    'session_connect',
-    'session_connected',
-    'session_leave',
-    'session_left',
-] as const
-
-type MessageType = (typeof messageTypes)[number]
+enum MessageType {
+    SESSION_CREATE = 'SESSION_CREATE',
+    SESSION_CREATED = 'SESSION_CREATED',
+    SESSION_CONNECT = 'SESSION_CONNECT',
+    SESSION_CONNECTED = 'SESSION_CONNECTED',
+    SESSION_LEAVE = 'SESSION_LEAVE',
+    SESSION_LEFT = 'SESSION_LEFT',
+}
 
 type Packet = {
     messageType?: MessageType
     body?: Record<string, string>
     error?: {
         message?: string
-        body?: Record<string, string>
+        code?: number
     }
 }
 

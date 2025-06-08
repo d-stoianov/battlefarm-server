@@ -7,14 +7,17 @@ class SessionManager {
     private sessions: Session[] = []
 
     public createSession(ws: WebSocket) {
-        const session = new Session(2)
+        const player = new Player(ws)
+        const session = new Session(2, player)
+
+        console.log(`Player ${player.id} created session ${session.id}`)
 
         this.sessions.push(session)
 
         ws.send(
             JSON.stringify({
-                messageType: 'session_created',
-                body: { sessionId: session.id },
+                messageType: 'SESSION_CREATED',
+                body: { sessionId: session.id, playerId: player.id },
             } as Packet)
         )
     }
@@ -27,14 +30,14 @@ class SessionManager {
             ws.send(
                 JSON.stringify({
                     error: {
-                        message: `Not found session by id ${sessionId}`,
+                        message: `Session by id ${sessionId} was not found`,
                     },
                 } as Packet)
             )
             return
         }
 
-        // check if session is not full
+        // check if session is full
         if (session.isFull) {
             ws.send(
                 JSON.stringify({
@@ -46,10 +49,16 @@ class SessionManager {
             return
         }
 
+        const player = new Player(ws)
+        session.joinSession(player)
+
+        console.log(`Player ${player.id} joined session ${session.id}`)
+
         // connect user to the session
         ws.send(
             JSON.stringify({
-                messageType: 'session_connected',
+                messageType: 'SESSION_CONNECTED',
+                body: { playerId: player.id },
             } as Packet)
         )
     }
@@ -69,10 +78,15 @@ class SessionManager {
             return
         }
 
+        session.leaveSession(playerId)
+        console.log(`Player ${playerId} left session ${session.id}`)
+
+        console.log(`Session ${session.id} players: ${session.getPlayers()}`)
+
         // connect user to the session
         ws.send(
             JSON.stringify({
-                messageType: 'session_left',
+                messageType: 'SESSION_LEFT',
             } as Packet)
         )
     }

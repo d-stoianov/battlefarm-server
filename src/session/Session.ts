@@ -12,9 +12,11 @@ class Session {
     private players: Player[] = []
     private status: SessionStatus = SessionStatus.WAITING_FOR_PLAYERS
 
-    constructor(size = 2) {
+    constructor(size = 2, creator: Player) {
         this.id = uuidv4()
         this.size = size
+
+        this.joinSession(creator)
     }
 
     get isFull() {
@@ -29,16 +31,15 @@ class Session {
         return this.players
     }
 
-    public joinSession(ws: WebSocket) {
+    public joinSession(player: Player) {
         if (this.isFull) {
             throw new Error('Session is full')
         }
-        const player = new Player(ws)
         this.players.push(player)
     }
 
-    public leaveSession(player: Player) {
-        const indexToRemove = this.players.findIndex((p) => p.id === player.id)
+    public leaveSession(playerId: string) {
+        const indexToRemove = this.players.findIndex((p) => p.id === playerId)
 
         // mutate players array
         this.players = [
