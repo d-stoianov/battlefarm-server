@@ -26,14 +26,22 @@ wss.on('connection', function connection(ws) {
             case 'SESSION_CONNECT':
                 if (packet?.body && packet.body?.sessionId) {
                     sessionManager.connectToSession(ws, packet.body.sessionId)
+                    return
                 }
-                return
             case 'SESSION_LEAVE':
                 if (packet?.body && packet.body?.sessionId) {
                     sessionManager.connectToSession(ws, packet.body.sessionId)
+                    return
                 }
-                return
             default:
+                ws.send(
+                    JSON.stringify({
+                        error: {
+                            message:
+                                'Unrecognizable combination of message type and body',
+                        },
+                    } as Packet)
+                )
                 return
         }
     })
