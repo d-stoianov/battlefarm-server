@@ -6,38 +6,16 @@ import { Player } from '@/player/Player'
 class SessionManager {
     private sessions: Session[] = []
 
-    public createSession(ws: WebSocket) {
-        const player = new Player(ws)
-        const session = new Session(2, player)
+    public connectToSession(ws: WebSocket, sessionName: string) {
+        const session = this.findSessionByName(sessionName)
 
-        console.log(`Player ${player.id} created session ${session.id}`)
-
-        this.sessions.push(session)
-
-        ws.send(
-            JSON.stringify({
-                messageType: 'SESSION_CREATED',
-                body: { sessionId: session.id, playerId: player.id },
-            } as Packet)
-        )
-    }
-
-    public connectToSession(ws: WebSocket, sessionId: string) {
-        const session = this.findSession(sessionId)
-
-        // check if this session exists
+        // if session doesn't exist - create one
         if (!session) {
-            ws.send(
-                JSON.stringify({
-                    error: {
-                        message: `Session by id ${sessionId} was not found`,
-                    },
-                } as Packet)
-            )
+            this.createSession(ws, sessionName)
             return
         }
 
-        // check if session is full
+        // if session exists - check if it's full
         if (session.isFull) {
             ws.send(
                 JSON.stringify({
@@ -52,7 +30,7 @@ class SessionManager {
         const player = new Player(ws)
         session.joinSession(player)
 
-        console.log(`Player ${player.id} joined session ${session.id}`)
+        console.log(`Player ${player.id} joined session ${session.name}`)
 
         // connect user to the session
         ws.send(
@@ -79,9 +57,9 @@ class SessionManager {
         }
 
         session.leaveSession(playerId)
-        console.log(`Player ${playerId} left session ${session.id}`)
+        console.log(`Player ${playerId} left session ${session.name}`)
 
-        console.log(`Session ${session.id} players: ${session.getPlayers()}`)
+        console.log(`Session ${session.name} players: ${session.getPlayers()}`)
 
         // connect user to the session
         ws.send(
@@ -91,9 +69,25 @@ class SessionManager {
         )
     }
 
-    // find session by session id
-    private findSession(id: string): Session | undefined {
-        return this.sessions.find((s) => s.id === id)
+    private createSession(ws: WebSocket, sessionName: string) {
+        const player = new Player(ws)
+        const session = new Session(2, player, sessionName)
+
+        console.log(`Player ${player.id} created session ${session.name}`)
+
+        this.sessions.push(session)
+
+        ws.send(
+            JSON.stringify({
+                messageType: 'SESSION_CREATED',
+                body: { playerId: player.id },
+            } as Packet)
+        )
+    }
+
+    // find session by session name
+    private findSessionByName(name: string): Session | undefined {
+        return this.sessions.find((s) => s.name === name)
     }
 
     private findSessionByPlayerId(playerId: string): Session | undefined {

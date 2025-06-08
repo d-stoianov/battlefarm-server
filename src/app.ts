@@ -20,17 +20,14 @@ wss.on('connection', function connection(ws) {
         }
 
         switch (packet.messageType) {
-            case 'SESSION_CREATE':
-                sessionManager.createSession(ws)
-                return
             case 'SESSION_CONNECT':
-                if (packet?.body && packet.body?.sessionId) {
-                    sessionManager.connectToSession(ws, packet.body.sessionId)
+                if (packet?.body && packet.body?.sessionName) {
+                    sessionManager.connectToSession(ws, packet.body.sessionName)
                     return
                 }
             case 'SESSION_LEAVE':
-                if (packet?.body && packet.body?.sessionId) {
-                    sessionManager.connectToSession(ws, packet.body.sessionId)
+                if (packet?.body && packet.body?.sessionName) {
+                    sessionManager.leaveSession(ws, packet.body.sessionName)
                     return
                 }
             default:

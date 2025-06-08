@@ -8,13 +8,16 @@ enum SessionStatus {
 
 class Session {
     public readonly id: string
-    private size: number = 0
+    public readonly name: string
+
+    private size: number
     private players: Player[] = []
     private status: SessionStatus = SessionStatus.WAITING_FOR_PLAYERS
 
-    constructor(size = 2, creator: Player) {
+    constructor(size = 2, creator: Player, name: string) {
         this.id = uuidv4()
         this.size = size
+        this.name = name
 
         this.joinSession(creator)
     }
