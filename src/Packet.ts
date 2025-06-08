@@ -4,6 +4,7 @@ enum MessageType {
     SESSION_CONNECTED = 'SESSION_CONNECTED',
     SESSION_LEAVE = 'SESSION_LEAVE',
     SESSION_LEFT = 'SESSION_LEFT',
+    GAME_INIT = "GAME_INIT"
 }
 
 type Packet = {

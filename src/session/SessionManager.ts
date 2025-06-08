@@ -43,6 +43,23 @@ class SessionManager {
                     body: { playerId: player.id },
                 } as Packet)
             )
+
+            // if session filled all the players - start game
+            if (session.isFull) {
+                const random = crypto
+                    .getRandomValues(new Uint32Array(1))
+                    .toString()
+
+                // broadcast it to all the players in the session
+                session.getPlayers().forEach((p) => {
+                    p.ws.send(
+                        JSON.stringify({
+                            messageType: 'GAME_INIT',
+                            body: { seed: random },
+                        } as Packet)
+                    )
+                })
+            }
         }
 
         // attach the close listener

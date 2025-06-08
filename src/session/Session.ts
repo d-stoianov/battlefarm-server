@@ -54,10 +54,6 @@ class Session {
             ...this.players.slice(indexToRemove + 1),
         ]
     }
-
-    public startSession() {
-        this.status = SessionStatus.ACTIVE
-    }
 }
 
 export { Session }
