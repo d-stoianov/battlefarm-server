@@ -1,16 +1,35 @@
 import { WebSocketServer } from 'ws'
 import { PORT } from '@/config'
+import { Packet } from '@/Packet'
+import { SessionManager } from '@/session/SessionManager'
 
 const wss = new WebSocketServer({ port: PORT })
 
 console.log(`Websocket server is listening on port: ${PORT}`)
 
+const sessionManager = new SessionManager()
+
 wss.on('connection', function connection(ws) {
-    ws.on('error', console.error)
+    ws.on('message', (rawData) => {
+        const packet = JSON.parse(rawData.toString()) as Packet
 
-    ws.on('message', function message(data) {
-        console.log('received: %s', data)
+        console.log('PACKET: ', packet)
+
+        if (!('messageType' in packet)) {
+            return
+        }
+
+        switch (packet.messageType) {
+            case 'session_create':
+                sessionManager.createSession(ws)
+                return
+            case 'session_connect':
+                if (packet?.body && packet.body?.sessionId) {
+                    sessionManager.connectToSession(ws, packet.body.sessionId)
+                }
+                return
+            default:
+                return
+        }
     })
-
-    ws.send('something')
 })
