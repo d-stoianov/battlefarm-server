@@ -26,6 +26,10 @@ class Session {
         return this.size === this.players.length
     }
 
+    get isEmpty() {
+        return this.players.length === 0
+    }
+
     public getStatus() {
         return this.status
     }

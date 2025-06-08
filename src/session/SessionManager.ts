@@ -7,38 +7,57 @@ class SessionManager {
     private sessions: Session[] = []
 
     public connectToSession(ws: WebSocket, sessionName: string) {
-        const session = this.findSessionByName(sessionName)
+        const player = new Player(ws)
+        let session = this.findSessionByName(sessionName)
 
         // if session doesn't exist - create one
         if (!session) {
-            this.createSession(ws, sessionName)
-            return
-        }
+            session = new Session(2, player, sessionName)
+            this.sessions.push(session)
+            console.log(`Player ${player.id} created session ${session.name}`)
 
-        // if session exists - check if it's full
-        if (session.isFull) {
             ws.send(
                 JSON.stringify({
-                    error: {
-                        message: `Session is full`,
-                    },
+                    messageType: 'SESSION_CREATED',
+                    body: { playerId: player.id },
                 } as Packet)
             )
-            return
+        } else {
+            // if session exists - check if it's full
+            if (session.isFull) {
+                ws.send(
+                    JSON.stringify({
+                        error: { message: `Session is full` },
+                    } as Packet)
+                )
+                return
+            }
+
+            // connect user to the session
+            session.joinSession(player)
+            console.log(`Player ${player.id} joined session ${session.name}`)
+
+            ws.send(
+                JSON.stringify({
+                    messageType: 'SESSION_CONNECTED',
+                    body: { playerId: player.id },
+                } as Packet)
+            )
         }
 
-        const player = new Player(ws)
-        session.joinSession(player)
+        // attach the close listener
+        ws.on('close', () => {
+            console.log(
+                `Player ${player.id} disconnected from session ${session.name}`
+            )
+            session.leaveSession(player.id)
 
-        console.log(`Player ${player.id} joined session ${session.name}`)
-
-        // connect user to the session
-        ws.send(
-            JSON.stringify({
-                messageType: 'SESSION_CONNECTED',
-                body: { playerId: player.id },
-            } as Packet)
-        )
+            // remove session if empty
+            if (session.isEmpty) {
+                this.sessions = this.sessions.filter((s) => s !== session)
+                console.log(`Session ${session.name} removed (empty)`)
+            }
+        })
     }
 
     public leaveSession(ws: WebSocket, playerId: string) {
@@ -65,22 +84,6 @@ class SessionManager {
         ws.send(
             JSON.stringify({
                 messageType: 'SESSION_LEFT',
-            } as Packet)
-        )
-    }
-
-    private createSession(ws: WebSocket, sessionName: string) {
-        const player = new Player(ws)
-        const session = new Session(2, player, sessionName)
-
-        console.log(`Player ${player.id} created session ${session.name}`)
-
-        this.sessions.push(session)
-
-        ws.send(
-            JSON.stringify({
-                messageType: 'SESSION_CREATED',
-                body: { playerId: player.id },
             } as Packet)
         )
     }
