@@ -19,6 +19,7 @@ wss.on('connection', function connection(ws) {
             return
         }
 
+        /* eslint-disable no-fallthrough */
         switch (packet.messageType) {
             case 'SESSION_CONNECT':
                 if (packet?.body && packet.body?.sessionName) {
