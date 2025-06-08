@@ -28,6 +28,11 @@ wss.on('connection', function connection(ws) {
                     sessionManager.connectToSession(ws, packet.body.sessionId)
                 }
                 return
+            case 'session_leave':
+                if (packet?.body && packet.body?.sessionId) {
+                    sessionManager.connectToSession(ws, packet.body.sessionId)
+                }
+                return
             default:
                 return
         }

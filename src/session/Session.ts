@@ -1,3 +1,4 @@
+import { Player } from '@/player/Player'
 import { v4 as uuidv4 } from 'uuid'
 
 enum SessionStatus {
@@ -6,9 +7,9 @@ enum SessionStatus {
 }
 
 class Session {
-    private readonly id: string
+    public readonly id: string
     private size: number = 0
-    private connections: WebSocket[] = []
+    private players: Player[] = []
     private status: SessionStatus = SessionStatus.WAITING_FOR_PLAYERS
 
     constructor(size = 2) {
@@ -17,22 +18,33 @@ class Session {
     }
 
     get isFull() {
-        return this.size === this.connections.length
-    }
-
-    public getId() {
-        return this.id
+        return this.size === this.players.length
     }
 
     public getStatus() {
         return this.status
     }
 
-    public joinSession(connection: WebSocket) {
+    public getPlayers() {
+        return this.players
+    }
+
+    public joinSession(ws: WebSocket) {
         if (this.isFull) {
-            throw new Error("Session is full")
+            throw new Error('Session is full')
         }
-        this.connections.push(connection)
+        const player = new Player(ws)
+        this.players.push(player)
+    }
+
+    public leaveSession(player: Player) {
+        const indexToRemove = this.players.findIndex((p) => p.id === player.id)
+
+        // mutate players array
+        this.players = [
+            ...this.players.slice(0, indexToRemove),
+            ...this.players.slice(indexToRemove + 1),
+        ]
     }
 
     public startSession() {
