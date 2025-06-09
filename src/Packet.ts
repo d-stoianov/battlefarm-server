@@ -4,12 +4,14 @@ enum MessageType {
     SESSION_CONNECTED = 'SESSION_CONNECTED',
     SESSION_LEAVE = 'SESSION_LEAVE',
     SESSION_LEFT = 'SESSION_LEFT',
-    GAME_INIT = "GAME_INIT"
+    GAME_INIT = 'GAME_INIT',
+    TICK = 'TICK',
 }
 
 type Packet = {
     messageType?: MessageType
-    body?: Record<string, string>
+    playerId?: string
+    body?: Record<string, unknown>
     error?: {
         message?: string
         code?: number
