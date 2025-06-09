@@ -22,13 +22,26 @@ wss.on('connection', function connection(ws) {
         /* eslint-disable no-fallthrough */
         switch (packet.messageType) {
             case 'SESSION_CONNECT':
-                if (packet?.body && packet.body?.sessionName) {
+                if (
+                    packet?.body &&
+                    'sessionName' in packet.body &&
+                    typeof packet.body.sessionName === 'string'
+                ) {
                     sessionManager.connectToSession(ws, packet.body.sessionName)
                     return
                 }
             case 'SESSION_LEAVE':
-                if (packet?.body && packet.body?.sessionName) {
-                    sessionManager.leaveSession(ws, packet.body.sessionName)
+                if (packet?.body && packet?.playerId) {
+                    sessionManager.leaveSession(ws, packet.playerId)
+                    return
+                }
+            case 'TICK':
+                if (packet?.body && packet?.playerId) {
+                    sessionManager.tickOthers(
+                        ws,
+                        packet.playerId,
+                        packet.body
+                    )
                     return
                 }
             default:

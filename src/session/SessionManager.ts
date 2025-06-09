@@ -105,6 +105,35 @@ class SessionManager {
         )
     }
 
+    // broadcasting game state updates to all the other players in the session
+    public tickOthers(ws: WebSocket, playerId: string, body: unknown) {
+        const session = this.findSessionByPlayerId(playerId)
+
+        // check if this session exists
+        if (!session) {
+            ws.send(
+                JSON.stringify({
+                    error: {
+                        message: `Player is not connected to any session`,
+                    },
+                } as Packet)
+            )
+            return
+        }
+
+        const playersToBroadcast = session
+            .getPlayers()
+            .filter((p) => p.id !== playerId)
+
+        playersToBroadcast.forEach((p) => {
+            p.ws.send(
+                JSON.stringify({
+                    body,
+                } as Packet)
+            )
+        })
+    }
+
     // find session by session name
     private findSessionByName(name: string): Session | undefined {
         return this.sessions.find((s) => s.name === name)
