@@ -36,12 +36,8 @@ wss.on('connection', function connection(ws) {
                     return
                 }
             case 'TICK':
-                if (packet?.body && packet?.playerId) {
-                    sessionManager.tickOthers(
-                        ws,
-                        packet.playerId,
-                        packet.body
-                    )
+                if (packet?.playerId) {
+                    sessionManager.tickOthers(ws, packet)
                     return
                 }
             default:
