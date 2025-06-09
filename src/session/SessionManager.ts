@@ -106,8 +106,8 @@ class SessionManager {
     }
 
     // broadcasting game state updates to all the other players in the session
-    public tickOthers(ws: WebSocket, playerId: string, body: unknown) {
-        const session = this.findSessionByPlayerId(playerId)
+    public tickOthers(ws: WebSocket, packet: Packet) {
+        const session = this.findSessionByPlayerId(packet.playerId as string)
 
         // check if this session exists
         if (!session) {
@@ -123,12 +123,12 @@ class SessionManager {
 
         const playersToBroadcast = session
             .getPlayers()
-            .filter((p) => p.id !== playerId)
+            .filter((p) => p.id !== packet.playerId)
 
         playersToBroadcast.forEach((p) => {
             p.ws.send(
                 JSON.stringify({
-                    body,
+                    packet,
                 } as Packet)
             )
         })
